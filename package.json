@@ -4,6 +4,9 @@
 		"test": "grunt test",
 		"fix": "grunt fix"
 	},
+	"peerDependencies": {
+		"postcss-less": "6.0.0"
+	},
 	"devDependencies": {
 		"eslint-config-wikimedia": "0.20.0",
 		"grunt": "1.4.0",
