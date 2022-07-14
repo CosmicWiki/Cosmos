@@ -1,4 +1,4 @@
-name: Update Packages
+name: Upgrade Packages
 
 on:
   push:
