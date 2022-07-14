@@ -29,5 +29,5 @@ jobs:
         with:
           title: 'build(deps): Upgrade NPM packages (automated)'
           branch: 'build-deps-upgrade-npm-packages-automated'
-          base: 'dependabot/npm_and_yarn/stylelint-config-wikimedia-0.13.0'
+#         base: 'dependabot/npm_and_yarn/stylelint-config-wikimedia-0.13.0'
           commit-message: 'build(deps): upgrade NPM packages (automated)'
