@@ -1,4 +1,4 @@
-name: Quibble and Phan
+name: Update Packages
 
 on:
   push:
