@@ -22,11 +22,11 @@ class CosmosRail {
 	/** @var IContextSource */
 	private $context;
 
+	/** @var ILoadBalancer */
+	private $dbLoadBalancer;
+
 	/** @var LinkRenderer */
 	private $linkRenderer;
-
-	/** @var ILoadBalancer */
-	private $loadBalancer;
 
 	/** @var WANObjectCache */
 	private $objectCache;
@@ -55,8 +55,8 @@ class CosmosRail {
 		$skin = $context->getSkin();
 		'@phan-var SkinCosmos $skin';
 
+		$this->dbLoadBalancer = $skin->dbLoadBalancer;
 		$this->linkRenderer = $skin->linkRenderer;
-		$this->loadBalancer = $skin->loadBalancer;
 		$this->objectCache = $skin->objectCache;
 		$this->specialPageFactory = $skin->specialPageFactory;
 		$this->userFactory = $skin->userFactory;
@@ -351,7 +351,7 @@ class CosmosRail {
 		$recentChanges = $this->objectCache->get( $cacheKey );
 
 		if ( empty( $recentChanges ) ) {
-			$dbr = $this->loadBalancer->getConnectionRef( DB_REPLICA );
+			$dbr = $this->dbLoadBalancer->getConnectionRef( DB_REPLICA );
 
 			$res = $dbr->newSelectQueryBuilder()
 				->table( 'recentchanges' )
