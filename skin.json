@@ -22,6 +22,7 @@
 				"ContentLanguage",
 				"CosmosConfig",
 				"CosmosWordmarkLookup",
+				"DBLoadBalancer",
 				"LanguageNameUtils",
 				"LinkRenderer",
 				"MainWANObjectCache",
