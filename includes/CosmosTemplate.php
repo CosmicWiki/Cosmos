@@ -163,14 +163,15 @@ class CosmosTemplate extends BaseTemplate {
 
 		// Build the mobile navigation
 		$html .= Html::openElement( 'nav', [ 'class' => 'cosmos-mobile-navigation' ] );
-		$html .= Html::rawElement(
-			'div',
-			[
-				'class' => 'cosmos-button cosmos-button-primary cosmos-mobile-menu-button',
-				'onclick' => '$(".wds-tabs").toggle()'
+
+		$html .= Html::rawElement( 'div', [
+			'class' => [
+				'cosmos-button',
+				'cosmos-button-primary',
+				'cosmos-mobile-menu-button',
 			],
-			'&#9776;'
-		);
+			'onclick' => '$(".wds-tabs").toggle()'
+		], '&#9776;' );
 
 		$html .= $this->buildNavigation();
 		$html .= Html::closeElement( 'nav' );
@@ -200,60 +201,55 @@ class CosmosTemplate extends BaseTemplate {
 		$html .= Html::openElement( 'div', [ 'id' => 'createPageModal', 'class' => 'cosmos-modal' ] );
 		$html .= Html::openElement( 'div', [ 'class' => 'cosmos-modal-content' ] );
 		$html .= Html::rawElement( 'span', [ 'class' => 'close' ], '&times;' );
-		$html .= Html::openElement(
-			'form',
-			[
-				'class' => 'wds-dialog__wrapper create-page-dialog__wrapper',
-				'action' => $this->get( 'wgScript' ),
-				'method' => 'get'
-			]
-		);
+		$html .= Html::openElement( 'form', [
+			'class' => [
+				'wds-dialog__wrapper',
+				'create-page-dialog__wrapper',
+			],
+			'action' => $this->get( 'wgScript' ),
+			'method' => 'get'
+		] );
 
 		$html .= Html::hidden( 'action', 'edit' );
 
-		$headerIcon = Icon::getIcon( 'close' )->makeSvg(
-			14,
-			14,
-			[ 'class' => 'wds-icon wds-icon-small create-page-dialog__close' ]
-		);
+		$headerIcon = Icon::getIcon( 'close' )->makeSvg( 14, 14, [
+			'class' => [
+				'wds-icon',
+				'wds-icon-small',
+				'create-page-dialog__close',
+			]
+		] );
 
-		$html .= Html::rawElement(
-			'header',
-			[ 'class' => 'wds-dialog__title' ],
-			$this->getMsg( 'cosmos-createpage-header' )->escaped() . $headerIcon
-		);
+		$html .= Html::rawElement( 'header', [
+			'class' => 'wds-dialog__title'
+		], $this->getMsg( 'cosmos-createpage-header' )->escaped() . $headerIcon );
 
 		$html .= Html::openElement( 'div', [ 'class' => 'wds-dialog__content' ] );
-		$html .= Html::rawElement(
-			'div',
-			[ 'id' => 'create-page-dialog__message' ],
-			$this->getMsg( 'cosmos-createpage-input-label' )->escaped()
-		);
+
+		$html .= Html::rawElement( 'div', [
+			'id' => 'create-page-dialog__message',
+		], $this->getMsg( 'cosmos-createpage-input-label' )->escaped() );
 
 		$html .= Html::openElement( 'div', [ 'class' => 'wds-input create-page-dialog__title-wrapper' ] );
 
-		$html .= Html::input(
-			'title',
-			'',
-			'text',
-			[ 'class' => 'wds-input__field', 'id' => 'create-page-dialog__title' ]
-		);
+		$html .= Html::input( 'title', '', 'text', [
+			'class' => 'wds-input__field',
+			'id' => 'create-page-dialog__title',
+		] );
 
 		$html .= Html::closeElement( 'div' );
 
-		$html .= Html::rawElement(
-			'div',
-			[ 'id' => 'create-page-dialog__message' ],
-			$this->getMsg( 'cosmos-createpage-text',
-				$skin->getLanguage()->formatNum( SiteStats::articles() ),
-				$this->get( 'sitename' ),
-				$this->config->get( 'CosmosEnableWantedPages' ) ?
-					$this->getMsg( 'cosmos-createpage-wanted-pages' )->text() :
-					$this->getMsg( 'cosmos-createpage-no-wanted-pages',
-						SpecialPage::getTitleFor( 'Wantedpages' )
-					)->text()
-			)->parse()
-		);
+		$html .= Html::rawElement( 'div', [
+			'id' => 'create-page-dialog__message'
+		], $this->getMsg( 'cosmos-createpage-text',
+			$skin->getLanguage()->formatNum( SiteStats::articles() ),
+			$this->get( 'sitename' ),
+			$this->config->get( 'CosmosEnableWantedPages' ) ?
+				$this->getMsg( 'cosmos-createpage-wanted-pages' )->text() :
+				$this->getMsg( 'cosmos-createpage-no-wanted-pages',
+					SpecialPage::getTitleFor( 'Wantedpages' )
+				)->text()
+		)->parse() );
 
 		$html .= Html::openElement( 'div', [ 'class' => 'create-page-dialog__proposals' ] );
 		$html .= Html::openElement( 'ul', [ 'class' => 'articleProposals' ] );
@@ -277,7 +273,11 @@ class CosmosTemplate extends BaseTemplate {
 		$html .= Html::submitButton(
 			$this->getMsg( 'cosmos-createpage-next' )->text(),
 			[
-				'class' => 'wds-button wds-is-text create-page-dialog__button',
+				'class' => [
+					'wds-button',
+					'wds-is-text',
+					'create-page-dialog__button',
+				],
 				'disabled'
 			]
 		);
@@ -357,14 +357,14 @@ class CosmosTemplate extends BaseTemplate {
 
 		// ManageWiki links
 		if ( isset( $this->data['sidebar']['managewiki-sidebar-header'] ) ) {
-			$dropdownIcon = Icon::getIcon( 'dropdown' )->makeSvg(
-				14,
-				14,
-				[
-					'id' => 'wds-icons-dropdown-tiny',
-					'class' => 'wds-icon wds-icon-tiny wds-dropdown__toggle-chevron'
+			$dropdownIcon = Icon::getIcon( 'dropdown' )->makeSvg( 14, 14, [
+				'id' => 'wds-icons-dropdown-tiny',
+				'class' => [
+					'wds-icon',
+					'wds-icon-tiny',
+					'wds-dropdown__toggle-chevron',
 				]
-			);
+			] );
 
 			$headerID = Sanitizer::escapeIdForAttribute( $this->getMsg( 'managewiki-sidebar-header' )->text() );
 			$html .= Html::rawElement(
