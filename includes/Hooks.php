@@ -67,36 +67,29 @@ class Hooks implements
 
 		$out->enableOOUI();
 
-		$conflict = '';
 		if ( $editPage->isConflict ) {
-			$conflict = Html::rawElement(
-				'div',
-				[
-					'id' => 'mw-previewconflict',
-					'class' => 'warningbox'
-				],
-				$context->msg( 'previewconflict' )->escaped()
+			$conflict = Html::warningBox(
+				$context->msg( 'previewconflict' )->escaped(),
+				'mw-previewconflict'
 			);
+		} else {
+			$conflict = '';
 		}
 
-		$previewnote = $context->msg( 'previewnote' )->plain() .
+		$note = $context->msg( 'previewnote' )->plain() .
 			' <span class="mw-continue-editing">' .
 			'[[#' . EditPage::EDITFORM_ID . '|' .
 			$context->getLanguage()->getArrow() . ' ' .
 			$context->msg( 'continue-editing' )->text() . ']]</span>';
 
 		$previewHTML = Html::rawElement(
-			'div',
-			[ 'class' => 'previewnote' ],
+			'div', [ 'class' => 'previewnote' ],
 			Html::rawElement(
-				'h2',
-				[ 'id' => 'mw-previewheader' ],
+				'h2', [ 'id' => 'mw-previewheader' ],
 				$context->msg( 'preview' )->escaped()
 			) .
-			Html::rawElement(
-				'div',
-				[ 'class' => 'warningbox' ],
-				$out->parseAsInterface( $previewnote )
+			Html::warningBox(
+				$out->parseAsInterface( $note )
 			) . $conflict
 		);
 
