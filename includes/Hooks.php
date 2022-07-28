@@ -82,10 +82,10 @@ class Hooks implements
 			$context->getLanguage()->getArrow() . ' ' .
 			$context->msg( 'continue-editing' )->text() . ']]</span>';
 
-		$previewHTML = Html::rawElement(
-			'div', [ 'class' => 'previewnote' ],
-			Html::rawElement(
-				'h2', [ 'id' => 'mw-previewheader' ],
+		$previewHTML = Html::rawElement( 'div',
+			[ 'class' => 'previewnote' ],
+			Html::rawElement( 'h2',
+				[ 'id' => 'mw-previewheader' ],
 				$context->msg( 'preview' )->escaped()
 			) .
 			Html::warningBox(
@@ -95,22 +95,18 @@ class Hooks implements
 
 		$cosmosNavigation = new CosmosNavigation( $context );
 
-		$previewHTML .= Html::openElement(
-			'header',
-			[ 'class' => 'cosmos-header' ]
+		$previewHTML .= Html::rawElement( 'header',
+			[ 'class' => 'cosmos-header' ],
+			Html::rawElement( 'nav', [
+				'class' => [
+					'cosmos-header__local-navigation',
+					'navigation-preview',
+				],
+			], Html::rawElement( 'ul',
+				[ 'class' => 'wds-tabs' ],
+				$cosmosNavigation->getMenu( CosmosNavigation::extract( $pageText ) )
+			) )
 		);
-
-		$previewHTML .= Html::openElement(
-			'nav',
-			[ 'class' => 'cosmos-header__local-navigation navigation-preview' ]
-		);
-
-		$previewHTML .= Html::openElement( 'ul', [ 'class' => 'wds-tabs' ] );
-		$previewHTML .= $cosmosNavigation->getMenu( CosmosNavigation::extract( $pageText ) );
-		$previewHTML .= Html::closeElement( 'ul' );
-
-		$previewHTML .= Html::closeElement( 'nav' );
-		$previewHTML .= Html::closeElement( 'header' );
 
 		return false;
 	}
