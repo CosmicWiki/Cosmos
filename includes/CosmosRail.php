@@ -87,7 +87,7 @@ class CosmosRail {
 	/**
 	 * @return string
 	 */
-	public function buildRailModules(): string {
+	public function buildRail(): string {
 		$modules = '';
 		foreach ( $this->getModules() as $module => $data ) {
 			if ( $data['header'] ?? false ) {
@@ -104,7 +104,22 @@ class CosmosRail {
 			], $data['body'] );
 		}
 
-		return $modules;
+		$rail = '';
+		if ( $modules ) {
+			$rail .= Html::openElement( 'div', [
+				'class' => 'CosmosRail',
+				'id' => 'CosmosRailWrapper',
+			] );
+
+			$rail .= Html::rawElement( 'div', [
+				'class' => 'cosmos-rail-inner',
+				'id' => 'CosmosRail',
+			], $modules ) );
+
+			$rail .= Html::closeElement( 'div' );
+		}
+
+		return $rail;
 	}
 
 	/**
