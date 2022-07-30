@@ -1,6 +1,8 @@
 <?php
 
+use MediaWiki\Config\ServiceOptions;
 use MediaWiki\MediaWikiServices;
+use RequestContext;
 use MediaWiki\Skins\Cosmos\CosmosBackgroundLookup;
 use MediaWiki\Skins\Cosmos\CosmosConfig;
 use MediaWiki\Skins\Cosmos\CosmosRail;
@@ -26,9 +28,14 @@ return [
 			$services->getService( 'CosmosHookRunner' ),
 			$services->getDBLoadBalancer(),
 			$services->getLinkRenderer(),
-			$services->getMainWANObjectCache(),
+			RequestContext::getMain(),
+			new ServiceOptions(
+				CosmosRail::CONSTRUCTOR_OPTIONS,
+				$services->getConfigFactory()->makeConfig( 'Cosmos' )
+			),
 			$services->getSpecialPageFactory(),
-			$services->getUserFactory()
+			$services->getUserFactory(),
+			$services->getMainWANObjectCache()
 		);
 	},
 
