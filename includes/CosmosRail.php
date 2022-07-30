@@ -37,9 +37,6 @@ class CosmosRail {
 	/** @var UserFactory */
 	private $userFactory;
 
-	/** @var string */
-	private static $railHookContents = '';
-
 	/**
 	 * @param CosmosConfig $config
 	 * @param IContextSource $context
@@ -60,27 +57,17 @@ class CosmosRail {
 		$this->objectCache = $skin->objectCache;
 		$this->specialPageFactory = $skin->specialPageFactory;
 		$this->userFactory = $skin->userFactory;
-
-		if ( !(bool)static::$railHookContents ) {
-			$hookContainer = MediaWikiServices::getInstance()->getHookContainer();
-			$hookContainer->run( 'CosmosRail', [ $this, $skin ] );
-		}
 	}
 
 	/**
-	 * @param CosmosConfig $config
-	 * @param IContextSource $context
 	 * @return bool
 	 */
-	public static function railsHidden(
-		CosmosConfig $config,
-		IContextSource $context
-	) {
-		$disabledNamespaces = $config->getRailDisabledNamespaces();
-		$disabledPages = $config->getRailDisabledPages();
+	public function hidden(): bool {
+		$disabledNamespaces = $this->config->getRailDisabledNamespaces();
+		$disabledPages = $this->config->getRailDisabledPages();
 
-		$title = $context->getTitle();
-		$out = $context->getOutput();
+		$title = $this->context->getTitle();
+		$out = $this->context->getOutput();
 
 		if (
 			$title->inNamespaces( $disabledNamespaces ) ||
@@ -98,249 +85,141 @@ class CosmosRail {
 	}
 
 	/**
-	 * @param CosmosConfig $config
-	 * @param IContextSource $context
-	 * @return bool
-	 */
-	public static function railsExist(
-		CosmosConfig $config,
-		IContextSource $context
-	) {
-		$validModules = [ 'interface', 'recentchanges' ];
-		$enabledModules = [];
-
-		foreach ( $config->getEnabledRailModules() as $module => $value ) {
-			if ( $value ) {
-				$enabledModules[] = $module;
-			}
-		}
-
-		$moduleCount = 0;
-
-		$interfaceRailModules = $config->getEnabledRailModules()['interface'];
-
-		$interfaceModules = $interfaceRailModules[0] ?? $interfaceRailModules;
-
-		foreach ( (array)$interfaceModules as $message => $type ) {
-			if ( $type && !$context->msg( $message )->isDisabled() ) {
-				$moduleCount++;
-			}
-		}
-
-		if ( !array_intersect( $validModules, $enabledModules ) ||
-			( $enabledModules === [ 'interface' ] &&
-				$moduleCount === 0 ) ) {
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
-	 * @param CosmosConfig $config
-	 * @param IContextSource $context
-	 * @return bool
-	 */
-	public static function hookRailsExist(
-		CosmosConfig $config,
-		IContextSource $context
-	) {
-		if ( !(bool)static::$railHookContents ) {
-			$self = new self( $config, $context );
-
-			$hookContainer = MediaWikiServices::getInstance()->getHookContainer();
-			$hookContainer->run( 'CosmosRail', [ $self, $context->getSkin() ] );
-		}
-
-		if ( !(bool)static::$railHookContents ) {
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
 	 * @return string
 	 */
-	public function buildRail() {
-		if ( ( !self::railsExist( $this->config, $this->context ) &&
-			!self::hookRailsExist( $this->config, $this->context ) ) ||
-				self::railsHidden( $this->config, $this->context )
-		) {
-			return '';
-		}
-
-		$html = Html::openElement( 'div', [
-				'class' => 'CosmosRail',
-				'id' => 'CosmosRailWrapper'
-			]
-		);
-
-		$html .= Html::openElement( 'div', [
-				'class' => 'cosmos-rail-inner',
-				'id' => 'CosmosRail'
-			]
-		);
-
-		$enableRecentChangesModule = $this->config->getEnabledRailModules()['recentchanges'];
-		if ( !empty( $this->getRecentChanges() ) && $enableRecentChangesModule ) {
-			$html .= $this->getRecentChangesModule();
-		}
-
-		if ( (bool)static::$railHookContents ) {
-			$html .= static::$railHookContents;
-		}
-
-		foreach ( (array)$this->getInterfaceModules() as $message => $type ) {
-			if ( $type === 'sticky' ) {
-				$html .= Html::rawElement( 'section', [
-						'class' => 'railModule module rail-sticky-module interface-module'
-					], $this->context->msg( $message )->parse()
-				);
-			} else {
-				$html .= Html::rawElement( 'section', [
-						'class' => 'railModule module interface-module'
-					], $this->context->msg( $message )->parse()
-				);
+	public function buildRailModules(): string {
+		$modules = '';
+		foreach ( $this->getModules() as $module => $data ) {
+			if ( $data['header'] ?? false ) {
+				$modules .= $this->buildModuleHeader( $data['header'] );
 			}
-		}
 
-		$html .= Html::closeElement( 'div' );
-		$html .= Html::closeElement( 'div' );
-
-		return $html;
-	}
-
-	/**
-	 * @param string $body
-	 * @param string $header
-	 * @param string $type
-	 * @param string $class
-	 */
-	public function buildModule(
-		string $body,
-		string $header = '',
-		string $type = 'normal',
-		string $class = 'custom-module'
-	) {
-		if ( $type === 'sticky' ) {
-			static::$railHookContents .= Html::openElement( 'section', [
-					'class' => "railModule module rail-sticky-module {$class}"
-				]
-			);
-		} else {
-			static::$railHookContents .= Html::openElement( 'section', [
-					'class' => "railModule module {$class}"
-				]
-			);
-		}
-
-		if ( $header ) {
-			static::$railHookContents .= $this->buildModuleHeader( $header );
-		}
-
-		static::$railHookContents .= $body;
-
-		static::$railHookContents .= Html::closeElement( 'section' );
-	}
-
-	/**
-	 * @param string $label
-	 * @return string
-	 */
-	protected function buildModuleHeader( string $label ) {
-		if ( !$this->context->msg( $label )->isDisabled() ) {
-			$label = $this->context->msg( $label )->text();
-		}
-
-		$html = Html::element( 'h3', [], $label );
-
-		return $html;
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function getInterfaceModules() {
-		$modules = [];
-
-		$interfaceRailModules = $this->config->getEnabledRailModules()['interface'];
-
-		$interfaceModules = $interfaceRailModules[0] ?? $interfaceRailModules;
-
-		foreach ( (array)$interfaceModules as $message => $type ) {
-			if ( $type && !$this->context->msg( $message )->isDisabled() ) {
-				$modules += [ $message => $type ];
-			}
+			$isSticky = $data['type'] === 'sticky';
+			$modules .= Html::rawElement( 'section', [
+				'class' => [
+					'railModule' => true,
+					'module' => true,
+					'rail-sticky-module' => $isSticky,
+				] + (array)$data['class']
+			], $data['body'] );
 		}
 
 		return $modules;
 	}
 
 	/**
+	 * @param string $label
 	 * @return string
 	 */
-	protected function getRecentChangesModule() {
+	protected function buildModuleHeader( string $label ): string {
+		if ( !$this->context->msg( $label )->isDisabled() ) {
+			$label = $this->context->msg( $label )->text();
+		}
+
+		$header = Html::element( 'h3', [], $label );
+
+		return $header;
+	}
+
+
+	/**
+	 * @return array
+	 */
+	public function getModules(): array {
+		$modules = [];
+
+		if ( $this->hidden() ) {
+			return $modules;
+		}
+
+		$enableRecentChangesModule = $this->config->getEnabledRailModules()['recentchanges'];
+		if ( $enableRecentChangesModule && !empty( $this->getRecentChanges() ) ) {
+			$this->buildRecentChangesModule( $modules );
+		}
+
+		$this->buildInterfaceModules( $modules );
+
+		$hookContainer = MediaWikiServices::getInstance()->getHookContainer();
+		$hookContainer->run( 'CosmosRail', [ &$modules, $this->context->getSkin() ] );
+
+		return $modules;
+	}
+
+	/**
+	 * @param array &$modules
+	 */
+	protected function buildInterfaceModules( array &$modules ) {
+		$interfaceRailModules = $this->config->getEnabledRailModules()['interface'];
+
+		$interfaceModules = $interfaceRailModules[0] ?? $interfaceRailModules;
+
+		foreach ( (array)$interfaceModules as $message => $type ) {
+			if ( $type && !$this->context->msg( $message )->isDisabled() ) {
+				$modules['interface-' . $message] = [
+					'body' => $this->context->msg( $message )->parse(),
+					'class' => 'interface-module',
+					'type' => $type,
+				];
+			}
+		}
+	}
+
+	/**
+	 * @param array &$modules
+	 */
+	protected function buildRecentChangesModule( array &$modules ) {
 		$type = $this->config->getEnabledRailModules()['recentchanges'];
 
-		if ( $type === 'sticky' ) {
-			$html = Html::openElement( 'section', [
-					'class' => 'railModule module rail-sticky-module recentchanges-module'
-				]
-			);
-		} else {
-			$html = Html::openElement( 'section', [
-					'class' => 'railModule module recentchanges-module'
-				]
-			);
-		}
+		$modules['recentchanges'] = [
+			'class' => 'recentchanges-module',
+			'header' => 'recentchanges',
+			'type' => $type,
+		];
 
-		$html .= $this->buildModuleHeader( 'recentchanges' );
-
+		$body = '';
 		foreach ( $this->getRecentChanges() as $recentChange ) {
-				// Open list item for recent change
-				$html .= Html::openElement( 'li' );
+			// Open list item for recent change
+			$body .= Html::openElement( 'li' );
 
-				$html .= Html::openElement( 'div', [ 'class' => 'cosmos-recentChanges-page' ] );
+			$body .= Html::openElement( 'div', [ 'class' => 'cosmos-recentChanges-page' ] );
 
-				// Create a link to the edited page
-				$html .= $this->linkRenderer->makeKnownLink(
-					new TitleValue( (int)$recentChange['namespace'], $recentChange['title'] )
+			// Create a link to the edited page
+			$body .= $this->linkRenderer->makeKnownLink(
+				new TitleValue( (int)$recentChange['namespace'], $recentChange['title'] )
+			);
+
+			$body .= Html::closeElement( 'div' );
+
+			$body .= Html::openElement( 'div', [ 'class' => 'cosmos-recentChanges-info' ] );
+
+			// Create a link to the user who edited it
+			$performer = $recentChange['performer'];
+			if ( !$performer->isRegistered() ) {
+				$linkTarget = new TitleValue(
+					NS_SPECIAL,
+					$this->specialPageFactory->getLocalNameFor( 'Contributions', $performer->getName() )
 				);
+			} else {
+				$linkTarget = new TitleValue( NS_USER, $performer->getTitleKey() );
+			}
 
-				$html .= Html::closeElement( 'div' );
+			$body .= $this->linkRenderer->makeLink( $linkTarget, $performer->getName() );
 
-				$html .= Html::openElement( 'div', [ 'class' => 'cosmos-recentChanges-info' ] );
+			// Display how long ago it was edited
+			$body .= ' • ';
+			$language = $this->context->getSkin()->getLanguage();
 
-				// Create a link to the user who edited it
-				$performer = $recentChange['performer'];
-				if ( !$performer->isRegistered() ) {
-					$linkTarget = new TitleValue(
-						NS_SPECIAL,
-						$this->specialPageFactory->getLocalNameFor( 'Contributions', $performer->getName() )
-					);
-				} else {
-					$linkTarget = new TitleValue( NS_USER, $performer->getTitleKey() );
-				}
+			$body .= $language->getHumanTimestamp(
+				MWTimestamp::getInstance( $recentChange['timestamp'] )
+			);
 
-				$html .= $this->linkRenderer->makeLink( $linkTarget, $performer->getName() );
+			$body .= Html::closeElement( 'div' );
 
-				// Display how long ago it was edited
-				$html .= ' • ';
-				$language = $this->context->getSkin()->getLanguage();
-				$html .= $language->getHumanTimestamp(
-					MWTimestamp::getInstance( $recentChange['timestamp'] )
-				);
-
-				$html .= Html::closeElement( 'div' );
-
-				// Close the list item
-				$html .= Html::closeElement( 'li' );
+			// Close the list item
+			$body .= Html::closeElement( 'li' );
 		}
 
-		$html .= Html::closeElement( 'section' );
-
-		return $html;
+		$modules['recentchanges']['body'] = $body;
 	}
 
 	/**
