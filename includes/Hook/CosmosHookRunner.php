@@ -3,6 +3,7 @@
 namespace MediaWiki\Skins\Cosmos\Hook;
 
 use MediaWiki\HookContainer\HookContainer;
+use Skin;
 
 class CosmosHookRunner implements CosmosRailHook {
 
