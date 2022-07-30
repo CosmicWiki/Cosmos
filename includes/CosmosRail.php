@@ -16,6 +16,7 @@ use Wikimedia\Rdbms\ILoadBalancer;
 use Wikimedia\Rdbms\SelectQueryBuilder;
 
 class CosmosRail {
+
 	/** @var CosmosConfig */
 	private $config;
 
@@ -37,6 +38,9 @@ class CosmosRail {
 	/** @var UserFactory */
 	private $userFactory;
 
+	/** @var array */
+	private $modules;
+
 	/**
 	 * @param CosmosConfig $config
 	 * @param IContextSource $context
@@ -57,6 +61,13 @@ class CosmosRail {
 		$this->objectCache = $skin->objectCache;
 		$this->specialPageFactory = $skin->specialPageFactory;
 		$this->userFactory = $skin->userFactory;
+
+		$this->modules = $this->getModules();
+
+		if ( $this->modules ) {
+			$context->getOutput()->addModuleStyles( [ 'skins.cosmos.rail' ] );
+		}
+
 	}
 
 	/**
@@ -89,7 +100,7 @@ class CosmosRail {
 	 */
 	public function buildRail(): string {
 		$modules = '';
-		foreach ( $this->getModules() as $module => $data ) {
+		foreach ( $this->modules as $module => $data ) {
 			if ( $data['header'] ?? false ) {
 				$modules .= $this->buildModuleHeader( $data['header'] );
 			}
@@ -106,7 +117,6 @@ class CosmosRail {
 
 		$rail = '';
 		if ( $modules ) {
-			$this->context->getOutput()->addModuleStyles( [ 'skins.cosmos.rail' ] );
 			$rail .= Html::openElement( 'div', [
 				'class' => 'CosmosRail',
 				'id' => 'CosmosRailWrapper',
