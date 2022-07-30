@@ -2,13 +2,12 @@
 
 namespace MediaWiki\Skins\Cosmos\Hook;
 
-use MediaWiki\Skins\Cosmos\CosmosRail;
 use Skin;
 
 interface CosmosRailHook {
 	/**
-	 * @param CosmosRail $cosmosRail
+	 * @param array &$modules
 	 * @param Skin $skin
 	 */
-	public function onCosmosRail( CosmosRail $cosmosRail, Skin $skin );
+	public function onCosmosRail( array &$modules, Skin $skin );
 }
