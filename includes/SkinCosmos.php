@@ -107,15 +107,6 @@ class SkinCosmos extends SkinTemplate {
 	public function getDefaultModules() {
 		$modules = parent::getDefaultModules();
 
-		// CosmosRail styles
-		if ( ( CosmosRail::railsExist( $this->cosmosConfig, $this->getContext() ) ||
-				CosmosRail::hookRailsExist( $this->cosmosConfig, $this->getContext() )
-			) &&
-			!CosmosRail::railsHidden( $this->cosmosConfig, $this->getContext() )
-		) {
-			$modules['styles']['skin'][] = 'skins.cosmos.rail';
-		}
-
 		// Load PortableInfobox styles
 		if ( ExtensionRegistry::getInstance()->isLoaded( 'Portable Infobox' ) ) {
 			$modules['styles']['skin'][] = 'skins.cosmos.portableinfobox';
