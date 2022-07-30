@@ -32,6 +32,9 @@ class CosmosTemplate extends BaseTemplate {
 	/** @var CosmosConfig */
 	private $cosmosConfig;
 
+	/** @var CosmosRail */
+	private $cosmosRail;
+
 	/** @var LanguageNameUtils */
 	private $languageNameUtils;
 
@@ -65,6 +68,8 @@ class CosmosTemplate extends BaseTemplate {
 		$this->specialPageFactory = $skin->specialPageFactory;
 		$this->titleFactory = $skin->titleFactory;
 		$this->wordmarkLookup = $skin->wordmarkLookup;
+
+		$this->cosmosRail = new CosmosRail( $this->cosmosConfig, $skin->getContext() );
 
 		$html = $this->get( 'headelement' );
 		$html .= $this->buildBanner();
@@ -884,8 +889,7 @@ class CosmosTemplate extends BaseTemplate {
 		$html .= $this->buildArticle();
 
 		// Build the rail
-		$cosmosRail = new CosmosRail( $this->cosmosConfig, $skin->getContext() );
-		$html .= $cosmosRail->buildRail();
+		$html .= $this->cosmosRail->buildRail();
 
 		$html .= Html::closeElement( 'div' );
 
