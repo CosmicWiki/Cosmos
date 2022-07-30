@@ -4,8 +4,9 @@ namespace MediaWiki\Skins\Cosmos;
 
 use Html;
 use IContextSource;
+use MediaWiki\Config\ServiceOptions;
 use MediaWiki\Linker\LinkRenderer;
-use MediaWiki\MediaWikiServices;
+use MediaWiki\Skins\Cosmos\Hook\CosmosHookRunner;
 use MediaWiki\SpecialPage\SpecialPageFactory;
 use MediaWiki\User\UserFactory;
 use MWTimestamp;
@@ -20,6 +21,9 @@ class CosmosRail {
 	/** @var CosmosConfig */
 	private $config;
 
+	/** @var CosmosHookRunner */
+	private $hookRunner;
+
 	/** @var IContextSource */
 	private $context;
 
@@ -29,8 +33,8 @@ class CosmosRail {
 	/** @var LinkRenderer */
 	private $linkRenderer;
 
-	/** @var WANObjectCache */
-	private $objectCache;
+	/** @var ServiceOptions */
+	private $options;
 
 	/** @var SpecialPageFactory */
 	private $specialPageFactory;
@@ -38,34 +42,48 @@ class CosmosRail {
 	/** @var UserFactory */
 	private $userFactory;
 
+	/** @var WANObjectCache */
+	private $wanObjectCache;
+
 	/** @var array */
 	private $modules;
 
 	/**
 	 * @param CosmosConfig $config
+	 * @param CosmosHookRunner $hookRunner
+	 * @param ILoadBalancer $dbLoadBalancer
+	 * @param LinkRenderer $linkRenderer
 	 * @param IContextSource $context
+	 * @param ServiceOptions $options
+	 * @param SpecialPageFactory $specialPageFactory
+	 * @param UserFactory $userFactory
+	 * @param WANObjectCache $wanObjectCache
 	 */
 	public function __construct(
 		CosmosConfig $config,
-		IContextSource $context
+		CosmosHookRunner $hookRunner,
+		ILoadBalancer $dbLoadBalancer,
+		LinkRenderer $linkRenderer,
+		IContextSource $context,
+		ServiceOptions $options,
+		SpecialPageFactory $specialPageFactory,
+		UserFactory $userFactory,
+		WANObjectCache $wanObjectCache
 	) {
 		$this->config = $config;
 		$this->context = $context;
-
-		/** @var SkinCosmos */
-		$skin = $context->getSkin();
-		'@phan-var SkinCosmos $skin';
-
-		$this->dbLoadBalancer = $skin->dbLoadBalancer;
-		$this->linkRenderer = $skin->linkRenderer;
-		$this->objectCache = $skin->objectCache;
-		$this->specialPageFactory = $skin->specialPageFactory;
-		$this->userFactory = $skin->userFactory;
+		$this->dbLoadBalancer = $dbLoadBalancer;
+		$this->hookRunner = $hookRunner;
+		$this->linkRenderer = $linkRenderer;
+		$this->options = $options;
+		$this->specialPageFactory = $specialPageFactory;
+		$this->userFactory = $userFactory;
+		$this->wanObjectCache = $wanObjectCache;
 
 		$this->modules = $this->getModules();
 
 		if ( $this->modules ) {
-			$context->getOutput()->addModuleStyles( [ 'skins.cosmos.rail' ] );
+			$this->context->getOutput()->addModuleStyles( [ 'skins.cosmos.rail' ] );
 		}
 
 	}
@@ -165,8 +183,7 @@ class CosmosRail {
 
 		$this->buildInterfaceModules( $modules );
 
-		$hookContainer = MediaWikiServices::getInstance()->getHookContainer();
-		$hookContainer->run( 'CosmosRail', [ &$modules, $this->context->getSkin() ] );
+		$this->hookRunner->onCosmosRail( &$modules, $this->context->getSkin() );
 
 		return $modules;
 	}
@@ -252,8 +269,8 @@ class CosmosRail {
 	 * @return array
 	 */
 	protected function getRecentChanges() {
-		$cacheKey = $this->objectCache->makeKey( 'cosmos_recentChanges', 4 );
-		$recentChanges = $this->objectCache->get( $cacheKey );
+		$cacheKey = $this->wanObjectCache->makeKey( 'cosmos_recentChanges', 4 );
+		$recentChanges = $this->wanObjectCache->get( $cacheKey );
 
 		if ( empty( $recentChanges ) ) {
 			$dbr = $this->dbLoadBalancer->getConnectionRef( DB_REPLICA );
@@ -287,7 +304,7 @@ class CosmosRail {
 				];
 			}
 
-			$this->objectCache->set( $cacheKey, $recentChanges, 30 );
+			$this->wanObjectCache->set( $cacheKey, $recentChanges, 30 );
 		}
 
 		return $recentChanges;
