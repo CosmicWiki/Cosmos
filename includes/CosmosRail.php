@@ -106,6 +106,7 @@ class CosmosRail {
 
 		$rail = '';
 		if ( $modules ) {
+			$this->context->getOutput()->addBodyClasses( 'cosmos-has-right-rail' );
 			$rail .= Html::openElement( 'div', [
 				'class' => 'CosmosRail',
 				'id' => 'CosmosRailWrapper',
