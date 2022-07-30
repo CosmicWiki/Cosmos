@@ -7,15 +7,11 @@ use ConfigFactory;
 use ExtensionRegistry;
 use Language;
 use MediaWiki\Languages\LanguageNameUtils;
-use MediaWiki\Linker\LinkRenderer;
 use MediaWiki\Permissions\PermissionManager;
 use MediaWiki\SpecialPage\SpecialPageFactory;
-use MediaWiki\User\UserFactory;
 use SkinTemplate;
 use TitleFactory;
 use UserProfilePage;
-use WANObjectCache;
-use Wikimedia\Rdbms\ILoadBalancer;
 
 class SkinCosmos extends SkinTemplate {
 
@@ -28,17 +24,8 @@ class SkinCosmos extends SkinTemplate {
 	/** @var CosmosConfig */
 	public $cosmosConfig;
 
-	/** @var ILoadBalancer */
-	public $dbLoadBalancer;
-
 	/** @var LanguageNameUtils */
 	public $languageNameUtils;
-
-	/** @var LinkRenderer */
-	public $linkRenderer;
-
-	/** @var WANObjectCache */
-	public $objectCache;
 
 	/** @var PermissionManager */
 	public $permissionManager;
@@ -49,9 +36,6 @@ class SkinCosmos extends SkinTemplate {
 	/** @var TitleFactory */
 	public $titleFactory;
 
-	/** @var UserFactory */
-	public $userFactory;
-
 	/** @var CosmosWordmarkLookup */
 	public $wordmarkLookup;
 
@@ -60,14 +44,10 @@ class SkinCosmos extends SkinTemplate {
 	 * @param Language $contentLanguage
 	 * @param CosmosConfig $cosmosConfig
 	 * @param CosmosWordmarkLookup $cosmosWordmarkLookup
-	 * @param ILoadBalancer $dbLoadBalancer
 	 * @param LanguageNameUtils $languageNameUtils
-	 * @param LinkRenderer $linkRenderer
-	 * @param WANObjectCache $WANObjectCache
 	 * @param PermissionManager $permissionManager
 	 * @param SpecialPageFactory $specialPageFactory
 	 * @param TitleFactory $titleFactory
-	 * @param UserFactory $userFactory
 	 * @param array $options
 	 */
 	public function __construct(
@@ -75,14 +55,10 @@ class SkinCosmos extends SkinTemplate {
 		Language $contentLanguage,
 		CosmosConfig $cosmosConfig,
 		CosmosWordmarkLookup $cosmosWordmarkLookup,
-		ILoadBalancer $dbLoadBalancer,
 		LanguageNameUtils $languageNameUtils,
-		LinkRenderer $linkRenderer,
-		WANObjectCache $WANObjectCache,
 		PermissionManager $permissionManager,
 		SpecialPageFactory $specialPageFactory,
 		TitleFactory $titleFactory,
-		UserFactory $userFactory,
 		array $options
 	) {
 		parent::__construct( $options );
@@ -90,14 +66,10 @@ class SkinCosmos extends SkinTemplate {
 		$this->config = $configFactory->makeConfig( 'Cosmos' );
 		$this->contentLanguage = $contentLanguage;
 		$this->cosmosConfig = $cosmosConfig;
-		$this->dbLoadBalancer = $dbLoadBalancer;
 		$this->languageNameUtils = $languageNameUtils;
-		$this->linkRenderer = $linkRenderer;
-		$this->objectCache = $WANObjectCache;
 		$this->permissionManager = $permissionManager;
 		$this->specialPageFactory = $specialPageFactory;
 		$this->titleFactory = $titleFactory;
-		$this->userFactory = $userFactory;
 		$this->wordmarkLookup = $cosmosWordmarkLookup;
 	}
 
