@@ -47,7 +47,7 @@ class CosmosRail {
 	private $userFactory;
 
 	/** @var WANObjectCache */
-	private $wanObjectCache;
+	private $WANObjectCache;
 
 	/** @var array */
 	private $modules;
@@ -61,7 +61,7 @@ class CosmosRail {
 	 * @param ServiceOptions $options
 	 * @param SpecialPageFactory $specialPageFactory
 	 * @param UserFactory $userFactory
-	 * @param WANObjectCache $wanObjectCache
+	 * @param WANObjectCache $WANObjectCache
 	 */
 	public function __construct(
 		CosmosConfig $config,
@@ -72,7 +72,7 @@ class CosmosRail {
 		ServiceOptions $options,
 		SpecialPageFactory $specialPageFactory,
 		UserFactory $userFactory,
-		WANObjectCache $wanObjectCache
+		WANObjectCache $WANObjectCache
 	) {
 		$options->assertRequiredOptions( self::CONSTRUCTOR_OPTIONS );
 
@@ -84,7 +84,7 @@ class CosmosRail {
 		$this->options = $options;
 		$this->specialPageFactory = $specialPageFactory;
 		$this->userFactory = $userFactory;
-		$this->wanObjectCache = $wanObjectCache;
+		$this->WANObjectCache = $WANObjectCache;
 
 		$this->modules = $this->getModules();
 
@@ -275,8 +275,8 @@ class CosmosRail {
 	 * @return array
 	 */
 	protected function getRecentChanges() {
-		$cacheKey = $this->wanObjectCache->makeKey( 'cosmos_recentChanges', 4 );
-		$recentChanges = $this->wanObjectCache->get( $cacheKey );
+		$cacheKey = $this->WANObjectCache->makeKey( 'cosmos_recentChanges', 4 );
+		$recentChanges = $this->WANObjectCache->get( $cacheKey );
 
 		if ( empty( $recentChanges ) ) {
 			$dbr = $this->dbLoadBalancer->getConnectionRef( DB_REPLICA );
@@ -311,7 +311,7 @@ class CosmosRail {
 				];
 			}
 
-			$this->wanObjectCache->set( $cacheKey, $recentChanges, 30 );
+			$this->WANObjectCache->set( $cacheKey, $recentChanges, 30 );
 		}
 
 		return $recentChanges;
