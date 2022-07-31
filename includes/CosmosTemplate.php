@@ -869,28 +869,24 @@ class CosmosTemplate extends BaseTemplate {
 	 * @return string
 	 */
 	protected function buildWiki() {
-		$skin = $this->getSkin();
-
 		$html = '';
 
 		// Open container element for page body
 		$html .= Html::openElement( 'section', [ 'id' => 'mw-content' ] );
 		$html .= Html::openElement( 'div', [ 'id' => 'content', 'class' => [
-				'cosmos-pageAligned', 'mw-body'
+				'cosmos-pageAligned',
+				'mw-body',
 			]
 		] );
 
 		// Build the header
 		$html .= $this->buildHeader();
 
-		// Build the article content
-		$html .= Html::openElement( 'div', [ 'class' => 'cosmos-articleContainer' ] );
-		$html .= $this->buildArticle();
-
-		// Build the rail
-		$html .= $this->cosmosRail->buildRail();
-
-		$html .= Html::closeElement( 'div' );
+		// Build the article content and rail
+		$html .= Html::rawElement( 'div',
+			[ 'class' => 'cosmos-articleContainer' ],
+			$this->buildArticle() . $this->cosmosRail->buildRail()
+		);
 
 		// Close container element for page body
 		$html .= Html::closeElement( 'div' );
