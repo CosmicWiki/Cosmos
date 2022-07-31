@@ -2,12 +2,12 @@
 
 use MediaWiki\Config\ServiceOptions;
 use MediaWiki\MediaWikiServices;
-use RequestContext;
 use MediaWiki\Skins\Cosmos\CosmosBackgroundLookup;
 use MediaWiki\Skins\Cosmos\CosmosConfig;
 use MediaWiki\Skins\Cosmos\CosmosRail;
 use MediaWiki\Skins\Cosmos\CosmosWordmarkLookup;
 use MediaWiki\Skins\Hook\CosmosHookRunner;
+use RequestContext;
 
 return [
 	'CosmosConfig' => static function ( MediaWikiServices $services ): CosmosConfig {
