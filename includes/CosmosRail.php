@@ -18,6 +18,10 @@ use Wikimedia\Rdbms\SelectQueryBuilder;
 
 class CosmosRail {
 
+	public const CONSTRUCTOR_OPTIONS = [
+		'ContentNamespaces',
+	];
+
 	/** @var CosmosConfig */
 	private $config;
 
@@ -70,6 +74,8 @@ class CosmosRail {
 		UserFactory $userFactory,
 		WANObjectCache $wanObjectCache
 	) {
+		$options->assertRequiredOptions( self::CONSTRUCTOR_OPTIONS );
+
 		$this->config = $config;
 		$this->context = $context;
 		$this->dbLoadBalancer = $dbLoadBalancer;
@@ -284,6 +290,7 @@ class CosmosRail {
 					'rc_timestamp',
 				] )
 				->where( [
+					'rc_namespace' => $this->options->get( 'ContentNamespaces' ),
 					'rc_type' => RecentChange::parseToRCType( [ 'new', 'edit' ] ),
 					'rc_bot' => 0,
 					'rc_deleted' => 0,
