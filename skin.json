@@ -1,6 +1,6 @@
 {
 	"name": "Cosmos",
-	"version": "6.7.0",
+	"version": "6.8.0",
 	"author": [
 		"Universal Omega",
 		"..."
@@ -20,16 +20,12 @@
 			"services": [
 				"ConfigFactory",
 				"ContentLanguage",
-				"CosmosConfig",
+				"CosmosRailBuilder",
 				"CosmosWordmarkLookup",
-				"DBLoadBalancer",
 				"LanguageNameUtils",
-				"LinkRenderer",
-				"MainWANObjectCache",
 				"PermissionManager",
 				"SpecialPageFactory",
-				"TitleFactory",
-				"UserFactory"
+				"TitleFactory"
 			],
 			"args": [ {
 				"name": "cosmos",
@@ -42,6 +38,7 @@
 					"skins.cosmos.styles"
 				],
 				"scripts": [
+					"skins.cosmos.searchLoader",
 					"skins.cosmos.js"
 				]
 			} ]
@@ -122,17 +119,27 @@
 			}
 		},
 		"skins.cosmos.js": {
-			"packageFiles": [
+			"targets": [
+				"desktop",
+				"mobile"
+			],
+			"scripts": [
 				"resources/skins.cosmos.js/cosmos.js",
-				"resources/skins.cosmos.js/mobile.js",
-				"resources/skins.cosmos.js/searchLoader.js",
+				"resources/skins.cosmos.js/mobile.js"
+			],
+			"dependencies": [
+				"mediawiki.cookie"
+			]
+		},
+		"skins.cosmos.searchLoader": {
+			"packageFiles": [
+				"resources/skins.cosmos.searchLoader/searchLoader.js",
 				{
-					"name": "resources/skins.cosmos.js/config.json",
+					"name": "resources/skins.cosmos.searchLoader/config.json",
 					"callback": "MediaWiki\\Skins\\Cosmos\\Hook\\ResourceLoaderCallbacks::getCosmosResourceLoaderConfig"
 				}
 			],
 			"dependencies": [
-				"mediawiki.cookie",
 				"mediawiki.page.ready",
 				"mediawiki.util"
 			],
