@@ -21,15 +21,12 @@
 				"ConfigFactory",
 				"ContentLanguage",
 				"CosmosConfig",
+				"CosmosRail",
 				"CosmosWordmarkLookup",
-				"DBLoadBalancer",
 				"LanguageNameUtils",
-				"LinkRenderer",
-				"MainWANObjectCache",
 				"PermissionManager",
 				"SpecialPageFactory",
-				"TitleFactory",
-				"UserFactory"
+				"TitleFactory"
 			],
 			"args": [ {
 				"name": "cosmos",
