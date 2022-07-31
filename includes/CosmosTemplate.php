@@ -63,13 +63,12 @@ class CosmosTemplate extends BaseTemplate {
 		$this->config = $skin->config;
 		$this->contentLanguage = $skin->contentLanguage;
 		$this->cosmosConfig = $skin->cosmosConfig;
+		$this->cosmosRail = $skin->cosmosRail;
 		$this->languageNameUtils = $skin->languageNameUtils;
 		$this->permissionManager = $skin->permissionManager;
 		$this->specialPageFactory = $skin->specialPageFactory;
 		$this->titleFactory = $skin->titleFactory;
 		$this->wordmarkLookup = $skin->wordmarkLookup;
-
-		$this->cosmosRail = new CosmosRail( $this->cosmosConfig, $skin->getContext() );
 
 		$html = $this->get( 'headelement' );
 		$html .= $this->buildBanner();
