@@ -24,6 +24,9 @@ class SkinCosmos extends SkinTemplate {
 	/** @var CosmosConfig */
 	public $cosmosConfig;
 
+	/** @var CosmosRail */
+	public $cosmosRail;
+
 	/** @var LanguageNameUtils */
 	public $languageNameUtils;
 
@@ -43,6 +46,7 @@ class SkinCosmos extends SkinTemplate {
 	 * @param ConfigFactory $configFactory
 	 * @param Language $contentLanguage
 	 * @param CosmosConfig $cosmosConfig
+	 * @param CosmosRail $cosmosRail
 	 * @param CosmosWordmarkLookup $cosmosWordmarkLookup
 	 * @param LanguageNameUtils $languageNameUtils
 	 * @param PermissionManager $permissionManager
@@ -54,6 +58,7 @@ class SkinCosmos extends SkinTemplate {
 		ConfigFactory $configFactory,
 		Language $contentLanguage,
 		CosmosConfig $cosmosConfig,
+		CosmosRail $cosmosRail,
 		CosmosWordmarkLookup $cosmosWordmarkLookup,
 		LanguageNameUtils $languageNameUtils,
 		PermissionManager $permissionManager,
@@ -66,6 +71,7 @@ class SkinCosmos extends SkinTemplate {
 		$this->config = $configFactory->makeConfig( 'Cosmos' );
 		$this->contentLanguage = $contentLanguage;
 		$this->cosmosConfig = $cosmosConfig;
+		$this->cosmosRail = $cosmosRail;
 		$this->languageNameUtils = $languageNameUtils;
 		$this->permissionManager = $permissionManager;
 		$this->specialPageFactory = $specialPageFactory;
