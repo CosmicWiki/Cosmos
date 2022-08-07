@@ -257,7 +257,12 @@ class CosmosTemplate extends BaseTemplate {
 		// Get most wanted pages
 		if ( $this->config->get( 'CosmosEnableWantedPages' ) ) {
 			foreach ( $this->getMostWantedPages() as $page ) {
-				$html .= '<li><a href="' . $page['url'] . '" class="new">' . $page['title'] . '</a></li>';
+				$html .= Html::rawElement( 'li', [],
+					Html::rawElement( 'a',
+						[ 'href' => $page['url'], 'class' => 'new' ],
+						$page['title']
+					)
+				);
 			}
 		}
 
