@@ -2,6 +2,8 @@
 
 namespace MediaWiki\Skins\Cosmos\Hook\Handlers;
 
+use Config;
+use ConfigFactory;
 use Html;
 use MediaWiki\Skins\Cosmos\CosmosSocialProfile;
 use SpecialPage;
@@ -9,6 +11,21 @@ use UserProfilePage;
 
 class SocialProfile {
 
+	/** @var Config */
+	private $config;
+
+	/**
+	 * @param ConfigFactory $configFactory
+	 */
+	public function __construct( ConfigFactory $configFactory ) {
+		$this->config = $configFactory->makeConfig( 'Cosmos' );
+	}
+
+
+	/**
+	 * @param UserProfilePage $userProfilePage
+	 * @param string &$profileTitle
+	 */
 	public function onUserProfileGetProfileTitle(
 		UserProfilePage $userProfilePage,
 		string &$profileTitle
@@ -51,7 +68,7 @@ class SocialProfile {
 			$followBioRedirects = $this->config->get( 'CosmosSocialProfileFollowBioRedirects' );
 
 			$bio = $this->config->get( 'CosmosSocialProfileAllowBio' )
-				? CosmosSocialProfile::getUserBio( $profileOwner, $followBioRedirects )
+				? CosmosSocialProfile::getUserBio( $profileOwner->getName(), $followBioRedirects )
 				: null;
 
 			$profileTitle = '<div class="hgroup"><h1 itemprop="name">' . $profileOwner->getName() . '</h1>' . $groupTags . $editCount . $bio . '</div>';
