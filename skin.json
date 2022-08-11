@@ -502,6 +502,9 @@
 	"HookHandlers": {
 		"main": {
 			"class": "MediaWiki\\Skins\\Cosmos\\Hooks"
+		},
+		"SocialProfile": {
+			"class": "MediaWiki\\Skins\\Cosmos\\Hook\\Handlers\\SocialProfile"
 		}
 	},
 	"Hooks": {
@@ -526,6 +529,9 @@
 		},
 		"ParserFirstCallInit": {
 			"handler": "main"
+		},
+		"UserProfileGetProfileTitle": {
+			"handler": "SocialProfile"
 		}
 	},
 	"manifest_version": 2
