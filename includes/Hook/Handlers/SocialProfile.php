@@ -73,6 +73,9 @@ class SocialProfile {
 				? CosmosSocialProfile::getUserBio( $profileOwner->getName(), $followBioRedirects )
 				: null;
 
-			$profileTitle = '<div class="hgroup"><h1 itemprop="name">' . $profileOwner->getName() . '</h1>' . $groupTags . $editCount . $bio . '</div>';
+			$profileTitle = Html::rawElement( 'div', [ 'class' => 'hgroup' ],
+				Html::element( 'h1', [ 'itemprop' => 'name' ], $profileOwner->getName() ) .
+				$groupTags . $editCount . $bio
+			);
 		}
 	}
