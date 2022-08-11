@@ -62,7 +62,7 @@ class CosmosSocialProfile {
 	 * @param User $user
 	 * @return int
 	 */
-	public static function getUserEdits( ?User $user ): int {
+	public static function getUserEdits( User $user ): int {
 		return $user->getEditCount();
 	}
 
