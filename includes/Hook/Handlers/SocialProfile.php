@@ -23,6 +23,8 @@ class SocialProfile {
 
 
 	/**
+	 * Set up Cosmos-specific SocialProfile elements
+	 *
 	 * @param UserProfilePage $userProfilePage
 	 * @param string &$profileTitle
 	 */
