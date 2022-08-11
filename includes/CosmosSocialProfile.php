@@ -69,12 +69,12 @@ class CosmosSocialProfile {
 	/**
 	 * @param string $user
 	 * @param bool $followRedirects
-	 * @return string
+	 * @return ?string
 	 */
 	public static function getUserBio(
 		string $user,
 		bool $followRedirects
-	): string {
+	): ?string {
 		$services = MediaWikiServices::getInstance();
 		$titleFactory = $services->getTitleFactory();
 
@@ -103,9 +103,9 @@ class CosmosSocialProfile {
 
 			return $content instanceof TextContent
 				? Html::element( 'p', [ 'class' => 'bio' ], $content->getText() )
-				: '';
+				: null;
 		}
 
-		return '';
+		return null;
 	}
 }
