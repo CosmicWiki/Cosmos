@@ -5,8 +5,10 @@ namespace MediaWiki\Skins\Cosmos\Hooks\Handlers;
 use Config;
 use ConfigFactory;
 use Html;
-use MediaWiki\Skins\Cosmos\CosmosSocialProfile;
+use Sanitizer;
 use SpecialPage;
+use TextContent;
+use User;
 use UserProfilePage;
 
 class SocialProfileHookHandler {
@@ -39,7 +41,7 @@ class SocialProfileHookHandler {
 			$profileOwner = $userProfilePage->profileOwner;
 
 			$groupTags = $this->config->get( 'CosmosSocialProfileShowGroupTags' )
-				? CosmosSocialProfile::getUserGroups( $profileOwner )
+				? $this->getUserGroups( $profileOwner )
 				: null;
 
 			$editCount = null;
@@ -53,12 +55,12 @@ class SocialProfileHookHandler {
 				], Html::rawElement( 'a', [
 					'href' => $contribsUrl
 				], Html::rawElement( 'em', [],
-					CosmosSocialProfile::getUserEdits( $profileOwner )
+					$this->getUserEdits( $profileOwner )
 				) .
 				Html::rawElement( 'span', [],
 					$userProfilePage->getContext()->msg( 'cosmos-editcount-label' )->escaped() .
 					Html::closeElement( 'br' ) .
-					CosmosSocialProfile::getUserRegistration( $profileOwner )
+					$this->getUserRegistration( $profileOwner )
 				) ) );
 			}
 
@@ -66,7 +68,7 @@ class SocialProfileHookHandler {
 			$followBioRedirects = $this->config->get( 'CosmosSocialProfileFollowBioRedirects' );
 
 			$bio = $this->config->get( 'CosmosSocialProfileAllowBio' )
-				? CosmosSocialProfile::getUserBio( $profileOwner->getName(), $followBioRedirects )
+				? $this->getUserBio( $profileOwner->getName(), $followBioRedirects )
 				: null;
 
 			$profileTitle = Html::rawElement( 'div', [ 'class' => 'hgroup' ],
@@ -74,5 +76,95 @@ class SocialProfileHookHandler {
 				$groupTags
 			) . $editCount . $bio;
 		}
+	}
+
+	/**
+	 * @param User $user
+	 * @return string
+	 */
+	private function getUserRegistration( User $user ): string {
+		return date( 'F j, Y', strtotime( $user->getRegistration() ) );
+	}
+
+	/**
+	 * @param User $user
+	 * @return string
+	 */
+	private function getUserGroups( User $user ): string {
+		if ( $user->getBlock() ) {
+			$userTags = Html::element(
+				'span',
+				[ 'class' => 'tag tag-blocked' ],
+				wfMessage( 'cosmos-user-blocked' )->text()
+			);
+		} else {
+			$numberOfTags = 0;
+			$userTags = '';
+
+			foreach ( $this->config->get( 'CosmosSocialProfileTagGroups' ) as $value ) {
+				if ( in_array( $value, $this->userGroupManager->getUserGroups( $user ) ) ) {
+					$numberOfTags++;
+					$numberOfTagsConfig = $this->config->get( 'CosmosSocialProfileNumberofGroupTags' );
+					$userGroupMessage = wfMessage( "group-{$value}-member" );
+
+					if ( $numberOfTags <= $numberOfTagsConfig ) {
+						$userTags .= Html::element(
+							'span',
+							[ 'class' => 'tag tag-' . Sanitizer::escapeClass( $value ) ],
+							ucfirst( ( !$userGroupMessage->isDisabled() ? $userGroupMessage->text() : $value ) )
+						);
+					}
+				}
+			}
+		}
+
+		return $userTags;
+	}
+
+	/**
+	 * @param User $user
+	 * @return string
+	 */
+	private function getUserEdits( User $user ): string {
+		return (string)$user->getEditCount();
+	}
+
+	/**
+	 * @param string $user
+	 * @param bool $followRedirects
+	 * @return ?string
+	 */
+	private function getUserBio(
+		string $user,
+		bool $followRedirects
+	): ?string {
+		$userBioPage = $this->titleFactory->newFromText( "User:{$user}" )
+			->getSubpage( 'bio' );
+
+		if ( $userBioPage && $userBioPage->isKnown() ) {
+			$wikiPage = $this->wikiPageFactory->newFromTitle( $userBioPage );
+
+			$content = $wikiPage->getContent();
+
+			// experimental
+			if (
+				$followRedirects &&
+				$userBioPage->isRedirect() &&
+				$content->getRedirectTarget()->isKnown() &&
+				$content->getRedirectTarget()->inNamespace( NS_USER )
+			) {
+				$userBioPage = $content->getRedirectTarget();
+
+				$wikiPage = $this->wikiPageFactory->newFromTitle( $userBioPage );
+
+				$content = $wikiPage->getContent();
+			}
+
+			return $content instanceof TextContent
+				? Html::element( 'p', [ 'class' => 'bio' ], $content->getText() )
+				: null;
+		}
+
+		return null;
 	}
 }
