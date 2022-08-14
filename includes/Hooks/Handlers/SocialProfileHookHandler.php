@@ -5,9 +5,13 @@ namespace MediaWiki\Skins\Cosmos\Hooks\Handlers;
 use Config;
 use ConfigFactory;
 use Html;
+use IContextSource;
+use MediaWiki\Page\WikiPageFactory;
+use MediaWiki\User\UserGroupManager;
 use Sanitizer;
 use SpecialPage;
 use TextContent;
+use TitleFactory;
 use User;
 use UserProfilePage;
 
@@ -16,11 +20,38 @@ class SocialProfileHookHandler {
 	/** @var Config */
 	private $config;
 
+	/** @var IContextSource */
+	private $context;
+
+	/** @var User */
+	private $profileOwner;
+
+	/** @var TitleFactory */
+	private $titleFactory;
+
+	/** @var UserGroupManager */
+	private $userGroupManager;
+
+	/** @var WikiPageFactory */
+	private $wikiPageFactory;
+
 	/**
 	 * @param ConfigFactory $configFactory
+	 * @param TitleFactory $titleFactory
+	 * @param UserGroupManager $userGroupManager
+	 * @param WikiPageFactory $wikiPageFactory
 	 */
-	public function __construct( ConfigFactory $configFactory ) {
+	public function __construct(
+		ConfigFactory $configFactory,
+		TitleFactory $titleFactory,
+		UserGroupManager $userGroupManager,
+		WikiPageFactory $wikiPageFactory
+	) {
 		$this->config = $configFactory->makeConfig( 'Cosmos' );
+
+		$this->titleFactory = $titleFactory;
+		$this->userGroupManager = $userGroupManager;
+		$this->wikiPageFactory = $wikiPageFactory;
 	}
 
 	/**
@@ -38,16 +69,17 @@ class SocialProfileHookHandler {
 			$this->config->get( 'CosmosSocialProfileShowEditCount' ) ||
 			$this->config->get( 'CosmosSocialProfileAllowBio' )
 		) {
-			$profileOwner = $userProfilePage->profileOwner;
+			$this->context = $userProfilePage->getContext();
+			$this->profileOwner = $userProfilePage->profileOwner;
 
 			$groupTags = $this->config->get( 'CosmosSocialProfileShowGroupTags' )
-				? $this->getUserGroups( $profileOwner )
+				? $this->getUserGroupTags()
 				: null;
 
 			$editCount = null;
 			if ( $this->config->get( 'CosmosSocialProfileShowEditCount' ) ) {
 				$contribsUrl = SpecialPage::getTitleFor(
-					'Contributions', $profileOwner->getName()
+					'Contributions', $this->profileOwner->getName()
 				)->getFullURL();
 
 				$editCount = Html::rawElement( 'div', [
@@ -55,12 +87,12 @@ class SocialProfileHookHandler {
 				], Html::rawElement( 'a', [
 					'href' => $contribsUrl
 				], Html::rawElement( 'em', [],
-					$this->getUserEdits( $profileOwner )
+					$this->getUserEdits()
 				) .
 				Html::rawElement( 'span', [],
-					$userProfilePage->getContext()->msg( 'cosmos-editcount-label' )->escaped() .
+					$this->context->msg( 'cosmos-editcount-label' )->escaped() .
 					Html::closeElement( 'br' ) .
-					$this->getUserRegistration( $profileOwner )
+					$this->getUserRegistration()
 				) ) );
 			}
 
@@ -68,44 +100,42 @@ class SocialProfileHookHandler {
 			$followBioRedirects = $this->config->get( 'CosmosSocialProfileFollowBioRedirects' );
 
 			$bio = $this->config->get( 'CosmosSocialProfileAllowBio' )
-				? $this->getUserBio( $profileOwner->getName(), $followBioRedirects )
+				? $this->getUserBio()
 				: null;
 
 			$profileTitle = Html::rawElement( 'div', [ 'class' => 'hgroup' ],
-				Html::element( 'h1', [ 'itemprop' => 'name' ], $profileOwner->getName() ) .
+				Html::element( 'h1', [ 'itemprop' => 'name' ], $this->profileOwner->getName() ) .
 				$groupTags
 			) . $editCount . $bio;
 		}
 	}
 
 	/**
-	 * @param User $user
 	 * @return string
 	 */
-	private function getUserRegistration( User $user ): string {
-		return date( 'F j, Y', strtotime( $user->getRegistration() ) );
+	private function getUserRegistration(): string {
+		return date( 'F j, Y', strtotime( $this->profileOwner->getRegistration() ) );
 	}
 
 	/**
-	 * @param User $user
 	 * @return string
 	 */
-	private function getUserGroups( User $user ): string {
-		if ( $user->getBlock() ) {
+	private function getUserGroupTags(): string {
+		if ( $this->profileOwner->getBlock() ) {
 			$userTags = Html::element(
 				'span',
 				[ 'class' => 'tag tag-blocked' ],
-				wfMessage( 'cosmos-user-blocked' )->text()
+				$this->context->msg( 'cosmos-user-blocked' )->text()
 			);
 		} else {
 			$numberOfTags = 0;
 			$userTags = '';
 
 			foreach ( $this->config->get( 'CosmosSocialProfileTagGroups' ) as $value ) {
-				if ( in_array( $value, $this->userGroupManager->getUserGroups( $user ) ) ) {
+				if ( in_array( $value, $this->userGroupManager->getUserGroups( $this->profileOwner ) ) ) {
 					$numberOfTags++;
 					$numberOfTagsConfig = $this->config->get( 'CosmosSocialProfileNumberofGroupTags' );
-					$userGroupMessage = wfMessage( "group-{$value}-member" );
+					$userGroupMessage = $this->context->msg( "group-{$value}-member" );
 
 					if ( $numberOfTags <= $numberOfTagsConfig ) {
 						$userTags .= Html::element(
@@ -122,28 +152,22 @@ class SocialProfileHookHandler {
 	}
 
 	/**
-	 * @param User $user
 	 * @return string
 	 */
-	private function getUserEdits( User $user ): string {
-		return (string)$user->getEditCount();
+	private function getUserEdits(): string {
+		return (string)$this->profileOwner->getEditCount();
 	}
 
 	/**
-	 * @param string $user
-	 * @param bool $followRedirects
 	 * @return ?string
 	 */
-	private function getUserBio(
-		string $user,
-		bool $followRedirects
-	): ?string {
-		$userBioPage = $this->titleFactory->newFromText( "User:{$user}" )
+	private function getUserBio(): ?string {
+		$userBioPage = $this->titleFactory->newFromText( $this->profileOwner->getName(), NS_USER )
 			->getSubpage( 'bio' );
 
 		if ( $userBioPage && $userBioPage->isKnown() ) {
+			$followRedirects = $this->config->get( 'CosmosSocialProfileFollowBioRedirects' );
 			$wikiPage = $this->wikiPageFactory->newFromTitle( $userBioPage );
-
 			$content = $wikiPage->getContent();
 
 			// experimental
