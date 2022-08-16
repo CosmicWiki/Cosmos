@@ -1440,7 +1440,7 @@ class CosmosTemplate extends BaseTemplate {
 				if ( !empty( $view ) ) {
 					$view['imgType'] = 'svg';
 					$view['imgSrc'] = 'back';
-					$view['text'] = $this->skin->msg( 'cosmos-action-backtopage', $view['text'] ?? false )->text();
+					$view['text'] = $this->getMsg( 'cosmos-action-backtopage', $view['text'] ?? false )->text();
 					$secondary = $view;
 				}
 			} else {
