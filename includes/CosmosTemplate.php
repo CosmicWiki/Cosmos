@@ -457,6 +457,7 @@ class CosmosTemplate extends BaseTemplate {
 	 * @return string
 	 */
 	protected function buildNotifications() {
+		$html = '';
 		if ( ExtensionRegistry::getInstance()->isLoaded( 'Echo' ) ) {
 			$personalTools = $this->skin->getPersonalToolsForMakeListItem( $this->get( 'personal_urls' ) );
 
@@ -470,7 +471,7 @@ class CosmosTemplate extends BaseTemplate {
 				$iconList .= $this->skin->makeListItem( $key, $item );
 			}
 
-			return Html::rawElement(
+			$html = Html::rawElement(
 				'div',
 				[ 'id' => 'cosmos-notification-icons' ],
 				Html::rawElement(
@@ -481,7 +482,7 @@ class CosmosTemplate extends BaseTemplate {
 			);
 		}
 
-		return '';
+		return $html;
 	}
 
 	/**
@@ -751,6 +752,7 @@ class CosmosTemplate extends BaseTemplate {
 	 * @return string
 	 */
 	protected function buildWordmark() {
+		$html = '';
 		if ( $this->wordmarkLookup->getWordmarkUrl() ) {
 			// Open container div for logo
 			$html = Html::openElement( 'div', [ 'class' => 'cosmos-header__wordmark' ] );
@@ -777,11 +779,9 @@ class CosmosTemplate extends BaseTemplate {
 
 			// Close container div
 			$html .= Html::closeElement( 'div' );
-
-			return $html;
 		}
 
-		return '';
+		return $html;
 	}
 
 	/**
@@ -978,6 +978,7 @@ class CosmosTemplate extends BaseTemplate {
 			$hasVisibleCategories = count( $categories ) > 0;
 		}
 
+		$html = '';
 		if ( $hasVisibleCategories ) {
 			$html = Html::openElement( 'div', [
 					'class' => 'page-header__categories',
@@ -1046,11 +1047,9 @@ class CosmosTemplate extends BaseTemplate {
 
 			$html .= Html::closeElement( 'div' );
 			$html .= Html::closeElement( 'div' );
-
-			return $html;
 		}
 
-		return '';
+		return $html;
 	}
 
 	/**
