@@ -47,23 +47,27 @@ class CosmosTemplate extends BaseTemplate {
 	private $wordmarkLookup;
 
 	/**
+	 * @var SkinCosmos
+	 * @phan-var SkinCosmos
+	 */
+	private $skin;
+
+	/**
 	 * Outputs the entire contents of the page
 	 *
 	 * @return string
 	 */
 	public function execute() {
-		/** @var SkinCosmos */
-		$skin = $this->getSkin();
-		'@phan-var SkinCosmos $skin';
+		$this->skin = $this->getSkin();
 
-		$this->config = $skin->config;
-		$this->contentLanguage = $skin->contentLanguage;
-		$this->cosmosRailBuilder = $skin->cosmosRailBuilder;
-		$this->languageNameUtils = $skin->languageNameUtils;
-		$this->permissionManager = $skin->permissionManager;
-		$this->specialPageFactory = $skin->specialPageFactory;
-		$this->titleFactory = $skin->titleFactory;
-		$this->wordmarkLookup = $skin->wordmarkLookup;
+		$this->config = $this->skin->config;
+		$this->contentLanguage = $this->skin->contentLanguage;
+		$this->cosmosRailBuilder = $this->skin->cosmosRailBuilder;
+		$this->languageNameUtils = $this->skin->languageNameUtils;
+		$this->permissionManager = $this->skin->permissionManager;
+		$this->specialPageFactory = $this->skin->specialPageFactory;
+		$this->titleFactory = $this->skin->titleFactory;
+		$this->wordmarkLookup = $this->skin->wordmarkLookup;
 
 		$html = $this->get( 'headelement' );
 		$html .= $this->buildBanner();
@@ -90,10 +94,9 @@ class CosmosTemplate extends BaseTemplate {
 	 * @return string
 	 */
 	protected function buildBanner() {
-		$html = '';
-
 		// Open container section for banner
-		$html .= Html::openElement( 'section', [ 'id' => 'cosmos-banner' ] );
+		$html = Html::openElement( 'section', [ 'id' => 'cosmos-banner' ] );
+
 		// Open container div for banner content
 		$html .= Html::openElement( 'div', [ 'id' => 'cosmos-banner-content', 'class' => 'cosmos-pageAligned' ] );
 
@@ -131,10 +134,8 @@ class CosmosTemplate extends BaseTemplate {
 	 * @return string
 	 */
 	protected function buildCreateArticleDialog() {
-		$skin = $this->getSkin();
+		$html = Html::openElement( 'div', [ 'id' => 'createPageModal', 'class' => 'cosmos-modal' ] );
 
-		$html = '';
-		$html .= Html::openElement( 'div', [ 'id' => 'createPageModal', 'class' => 'cosmos-modal' ] );
 		$html .= Html::openElement( 'div', [ 'class' => 'cosmos-modal-content' ] );
 		$html .= Html::rawElement( 'span', [ 'class' => 'close' ], '&times;' );
 		$html .= Html::openElement( 'form', [
@@ -178,7 +179,7 @@ class CosmosTemplate extends BaseTemplate {
 		$html .= Html::rawElement( 'div', [
 			'id' => 'create-page-dialog__message'
 		], $this->getMsg( 'cosmos-createpage-text',
-			$skin->getLanguage()->formatNum( SiteStats::articles() ),
+			$this->skin->getLanguage()->formatNum( SiteStats::articles() ),
 			$this->get( 'sitename' ),
 			$this->config->get( 'CosmosEnableWantedPages' ) ?
 				$this->getMsg( 'cosmos-createpage-wanted-pages' )->text() :
@@ -287,11 +288,9 @@ class CosmosTemplate extends BaseTemplate {
 	 * @return string
 	 */
 	protected function buildNavigation() {
-		$skin = $this->getSkin();
-
 		$cosmosNavigation = new CosmosNavigation( $skin->getContext() );
-		$html = '';
-		$html .= Html::openElement( 'ul', [ 'class' => 'wds-tabs' ] );
+
+		$html = Html::openElement( 'ul', [ 'class' => 'wds-tabs' ] );
 
 		// Load site navigation links from MediaWiki:Cosmos-navigation
 		$html .= $cosmosNavigation->getCode();
@@ -336,10 +335,8 @@ class CosmosTemplate extends BaseTemplate {
 	 * @return string
 	 */
 	protected function buildUserOptions() {
-		$html = '';
-
 		// Open container div
-		$html .= Html::openElement( 'div', [ 'id' => 'cosmos-banner-userOptions' ] );
+		$html = Html::openElement( 'div', [ 'id' => 'cosmos-banner-userOptions' ] );
 
 		if ( $this->data['username'] ) {
 			$html .= $this->buildNotifications();
@@ -357,11 +354,7 @@ class CosmosTemplate extends BaseTemplate {
 	 * @return string
 	 */
 	protected function buildPersonalTools() {
-		$skin = $this->getSkin();
-
-		$html = '';
-
-		$html .= Html::openElement(
+		$html = Html::openElement(
 			'div',
 			[
 				'id' => 'p-personal',
@@ -379,7 +372,7 @@ class CosmosTemplate extends BaseTemplate {
 		);
 
 		if ( class_exists( wAvatar::class ) && $this->config->get( 'CosmosUseSocialProfileAvatar' ) ) {
-			$avatar = new wAvatar( $skin->getUser()
+			$avatar = new wAvatar( $this->skin->getUser()
 				->getId(), 'm' );
 			$avatarElement = $avatar->getAvatarURL();
 		} else {
@@ -464,12 +457,8 @@ class CosmosTemplate extends BaseTemplate {
 	 * @return string
 	 */
 	protected function buildNotifications() {
-		$skin = $this->getSkin();
-
-		$html = '';
-
 		if ( ExtensionRegistry::getInstance()->isLoaded( 'Echo' ) ) {
-			$personalTools = $skin->getPersonalToolsForMakeListItem( $this->get( 'personal_urls' ) );
+			$personalTools = $this->skin->getPersonalToolsForMakeListItem( $this->get( 'personal_urls' ) );
 
 			$notificationIcons = [];
 			$notificationIcons['notifications-alert'] = $personalTools['notifications-alert'];
@@ -478,10 +467,10 @@ class CosmosTemplate extends BaseTemplate {
 			$iconList = '';
 
 			foreach ( $notificationIcons as $key => $item ) {
-				$iconList .= $skin->makeListItem( $key, $item );
+				$iconList .= $this->skin->makeListItem( $key, $item );
 			}
 
-			$html .= Html::rawElement(
+			return Html::rawElement(
 				'div',
 				[ 'id' => 'cosmos-notification-icons' ],
 				Html::rawElement(
@@ -492,7 +481,7 @@ class CosmosTemplate extends BaseTemplate {
 			);
 		}
 
-		return $html;
+		return '';
 	}
 
 	/**
@@ -502,12 +491,8 @@ class CosmosTemplate extends BaseTemplate {
 	 * @return string
 	 */
 	protected function buildSearchBar() {
-		$skin = $this->getSkin();
-
-		$html = '';
-
 		// Open container div
-		$html .= Html::openElement( 'div', [
+		$html = Html::openElement( 'div', [
 			'id' => 'p-search',
 			'class' => [
 				'cosmos-banner-search',
@@ -527,7 +512,7 @@ class CosmosTemplate extends BaseTemplate {
 		] );
 
 		// Insert search bar
-		$html .= $skin->makeSearchInput( [ 'id' => 'searchInput', 'class' => 'cosmos-search-input' ] );
+		$html .= $this->skin->makeSearchInput( [ 'id' => 'searchInput', 'class' => 'cosmos-search-input' ] );
 
 		// Insert hidden search title
 		$html .= Html::hidden( 'title', $this->get( 'searchtitle' ) );
@@ -545,10 +530,10 @@ class CosmosTemplate extends BaseTemplate {
 		);
 
 		// Insert search button
-		$html .= $skin->makeSearchButton( 'go', [ 'id' => 'searchButton', 'class' => 'cosmos-search-button' ] );
+		$html .= $this->skin->makeSearchButton( 'go', [ 'id' => 'searchButton', 'class' => 'cosmos-search-button' ] );
 
 		// Insert fallback search button
-		$html .= $skin->makeSearchButton(
+		$html .= $this->skin->makeSearchButton(
 			'fulltext',
 			[ 'id' => 'mw-searchButton', 'class' => 'mw-fallbackSearchButton cosmos-search-button' ]
 		);
@@ -569,8 +554,7 @@ class CosmosTemplate extends BaseTemplate {
 	 * @return string
 	 */
 	protected function buildWikiHeader() {
-		$skin = $this->getSkin();
-		$user = $skin->getUser();
+		$user = $this->skin->getUser();
 
 		$canCreate = $this->permissionManager->userHasRight( $user, 'createpage' );
 		$canEdit = $this->permissionManager->userHasRight( $user, 'edit' );
@@ -597,9 +581,7 @@ class CosmosTemplate extends BaseTemplate {
 
 		$isAnon = !$this->get( 'username' );
 
-		$html = '';
-
-		$html .= Html::openElement(
+		$html = Html::openElement(
 			'header',
 			[ 'class' => 'cosmos-header' ]
 		);
@@ -620,7 +602,7 @@ class CosmosTemplate extends BaseTemplate {
 			$html .= Html::rawElement( 'span', [
 					'class' => 'cosmos-header__counter-value'
 				],
-				$skin->getLanguage()->formatNum( SiteStats::articles() )
+				$this->skin->getLanguage()->formatNum( SiteStats::articles() )
 			);
 
 			$html .= Html::rawElement(
@@ -769,11 +751,9 @@ class CosmosTemplate extends BaseTemplate {
 	 * @return string
 	 */
 	protected function buildWordmark() {
-		$html = '';
-
 		if ( $this->wordmarkLookup->getWordmarkUrl() ) {
 			// Open container div for logo
-			$html .= Html::openElement( 'div', [ 'class' => 'cosmos-header__wordmark' ] );
+			$html = Html::openElement( 'div', [ 'class' => 'cosmos-header__wordmark' ] );
 
 			// Open link element
 			$html .= Html::openElement(
@@ -797,19 +777,19 @@ class CosmosTemplate extends BaseTemplate {
 
 			// Close container div
 			$html .= Html::closeElement( 'div' );
+
+			return $html;
 		}
 
-		return $html;
+		return '';
 	}
 
 	/**
 	 * @return string
 	 */
 	protected function buildWiki() {
-		$html = '';
-
 		// Open container element for page body
-		$html .= Html::openElement( 'section', [ 'id' => 'mw-content' ] );
+		$html = Html::openElement( 'section', [ 'id' => 'mw-content' ] );
 
 		$html .= Html::openElement( 'div', [
 			'id' => 'content',
@@ -841,10 +821,8 @@ class CosmosTemplate extends BaseTemplate {
 	 * @return string
 	 */
 	protected function buildHeader() {
-		$html = '';
-
 		// Open container element for header
-		$html .= Html::openElement( 'header', [ 'id' => 'cosmos-page-header' ] );
+		$html = Html::openElement( 'header', [ 'id' => 'cosmos-page-header' ] );
 
 		// Build article header
 		$html .= $this->buildArticleHeader();
@@ -859,10 +837,8 @@ class CosmosTemplate extends BaseTemplate {
 	 * @return string
 	 */
 	protected function buildArticle() {
-		$html = '';
-
 		// Open container element for article
-		$html .= Html::openElement( 'article', [ 'id' => 'cosmos-pageBody-content' ] );
+		$html = Html::openElement( 'article', [ 'id' => 'cosmos-pageBody-content' ] );
 
 		// If it exists, insert the page subtitle
 		if ( $this->data['subtitle'] ) {
@@ -933,9 +909,8 @@ class CosmosTemplate extends BaseTemplate {
 	 * @return string
 	 */
 	protected function buildArticleHeader() {
-		$html = '';
+		$html = $this->buildArticleCategories();
 
-		$html .= $this->buildArticleCategories();
 		$html .= $this->buildArticleInterlang();
 		$html .= Html::openElement( 'div', [ 'id' => 'cosmos-header-articleHeader' ] );
 		$html .= Html::openElement( 'h1', [ 'id' => 'cosmos-articleHeader-title', 'class' => 'firstHeading' ] );
@@ -954,8 +929,7 @@ class CosmosTemplate extends BaseTemplate {
 	 * @return string
 	 */
 	protected function buildArticleCategories() {
-		$skin = $this->getSkin();
-		$context = $skin->getContext();
+		$context = $this->skin->getContext();
 
 		$categories = [];
 		$categoryNames = $context->getOutput()->getCategories( 'normal' );
@@ -1004,9 +978,8 @@ class CosmosTemplate extends BaseTemplate {
 			$hasVisibleCategories = count( $categories ) > 0;
 		}
 
-		$html = '';
 		if ( $hasVisibleCategories ) {
-			$html .= Html::openElement( 'div', [
+			$html = Html::openElement( 'div', [
 					'class' => 'page-header__categories',
 				]
 			);
@@ -1073,18 +1046,18 @@ class CosmosTemplate extends BaseTemplate {
 
 			$html .= Html::closeElement( 'div' );
 			$html .= Html::closeElement( 'div' );
+
+			return $html;
 		}
 
-		return $html;
+		return '';
 	}
 
 	/**
 	 * @return string
 	 */
 	protected function buildArticleInterlang() {
-		$skin = $this->getSkin();
 		$html = '';
-
 		if ( count( $this->data['content_navigation']['variants'] ?? [] ) != 0 || $this->get( 'language_urls' ) ) {
 			$html .= Html::openElement( 'div', [ 'id' => 'cosmos-header-interlang' ] );
 
@@ -1183,7 +1156,7 @@ class CosmosTemplate extends BaseTemplate {
 
 			// Interlanguage (languages) links
 			if ( $this->get( 'language_urls' ) ) {
-				$title = $skin->getTitle();
+				$title = $this->skin->getTitle();
 
 				// Special casing for Language to change label to current page content language (not view language).
 				$interlangLabel = $this->getMsg( 'otherlanguages' )->text();
@@ -1272,8 +1245,7 @@ class CosmosTemplate extends BaseTemplate {
 	 * @return string
 	 */
 	protected function buildActionButtons() {
-		$skin = $this->getSkin();
-		$title = $skin->getRelevantTitle();
+		$title = $this->skin->getRelevantTitle();
 
 		$talkTitle = empty( $title ) ? null : $title->getTalkPageIfDefined();
 
@@ -1469,7 +1441,7 @@ class CosmosTemplate extends BaseTemplate {
 				if ( !empty( $view ) ) {
 					$view['imgType'] = 'svg';
 					$view['imgSrc'] = 'back';
-					$view['text'] = $skin->msg( 'cosmos-action-backtopage', $view['text'] ?? false )->text();
+					$view['text'] = $this->skin->msg( 'cosmos-action-backtopage', $view['text'] ?? false )->text();
 					$secondary = $view;
 				}
 			} else {
@@ -1579,12 +1551,8 @@ class CosmosTemplate extends BaseTemplate {
 	 * @return string
 	 */
 	protected function buildActionDropdown( array $items ) {
-		$skin = $this->getSkin();
-
-		$html = '';
-
 		// Open a <div> element to contain the entire drop-down
-		$html .= Html::openElement( 'div', [
+		$html = Html::openElement( 'div', [
 			'class' => 'cosmos-dropdown',
 			'id' => 'cosmos-actions-actionsList'
 		] );
@@ -1616,7 +1584,7 @@ class CosmosTemplate extends BaseTemplate {
 		// Step through the array and use the makeListItem to convert each of the
 		// items into a properly formatted HTML <li> element
 		foreach ( $items as $key => $value ) {
-			$html .= $skin->makeListItem( $key, $value );
+			$html .= $this->skin->makeListItem( $key, $value );
 		}
 
 		// Close the <ul> list container
@@ -1635,10 +1603,8 @@ class CosmosTemplate extends BaseTemplate {
 	 * @return string
 	 */
 	protected function buildFooter() {
-		$html = '';
-
 		// Open container element for footer
-		$html .= Html::openElement( 'footer', [ 'id' => 'cosmos-footer' ] );
+		$html = Html::openElement( 'footer', [ 'id' => 'cosmos-footer' ] );
 
 		// Open container element for footer content
 		$html .= Html::openElement( 'div', [ 'class' => 'cosmos-pageAligned' ] );
@@ -1679,12 +1645,8 @@ class CosmosTemplate extends BaseTemplate {
 			return '';
 		}
 
-		$skin = $this->getSkin();
-
-		$html = '';
-
 		// Open container div for icons
-		$html .= Html::openElement(
+		$html = Html::openElement(
 			'div',
 			[ 'id' => 'cosmos-footerContent-footerIcons', 'class' => 'cosmos-sidebarAligned' ]
 		);
@@ -1702,7 +1664,7 @@ class CosmosTemplate extends BaseTemplate {
 				);
 
 				if ( is_string( $icon ) || isset( $icon['src'] ) ) {
-					$html .= $skin->makeFooterIcon( $icon );
+					$html .= $this->skin->makeFooterIcon( $icon );
 				}
 
 				$html .= Html::closeElement( 'li' );
@@ -1725,10 +1687,8 @@ class CosmosTemplate extends BaseTemplate {
 	 * @return string
 	 */
 	protected function buildFooterLinks() {
-		$html = '';
-
 		// Open container div for footer links
-		$html .= Html::openElement(
+		$html = Html::openElement(
 			'div',
 			[ 'id' => 'cosmos-footerContent-footerLinks', 'class' => 'cosmos-articleAligned' ]
 		);
@@ -1761,12 +1721,8 @@ class CosmosTemplate extends BaseTemplate {
 	 * @return string
 	 */
 	protected function buildToolbar() {
-		$skin = $this->getSkin();
-
-		$html = '';
-
 		// Open container element for toolbar
-		$html .= Html::openElement( 'section', [ 'id' => 'cosmos-toolbar' ] );
+		$html = Html::openElement( 'section', [ 'id' => 'cosmos-toolbar' ] );
 
 		// Open container div for toolbar content
 		$html .= Html::openElement( 'div', [ 'id' => 'p-tb', 'class' => 'cosmos-toolbar-tools' ] );
@@ -1777,13 +1733,13 @@ class CosmosTemplate extends BaseTemplate {
 
 		// Make a list item for each of the tool links
 		foreach ( $this->data['sidebar']['TOOLBOX'] as $key => $toolbarItem ) {
-			$html .= $skin->makeListItem( $key, $toolbarItem );
+			$html .= $this->skin->makeListItem( $key, $toolbarItem );
 		}
 
 		// Support CreateRedirect extension
 		if ( ExtensionRegistry::getInstance()->isLoaded( 'CreateRedirect' ) ) {
-			$action = $skin->getRequest()->getText( 'action', 'view' );
-			$title = $skin->getRelevantTitle();
+			$action = $this->skin->getRequest()->getText( 'action', 'view' );
+			$title = $this->skin->getRelevantTitle();
 
 			$href = SpecialPage::getTitleFor( 'CreateRedirect', $title->getPrefixedText() )->getLocalURL();
 			$createRedirect = Html::rawElement(
@@ -1809,7 +1765,7 @@ class CosmosTemplate extends BaseTemplate {
 
 		if ( ExtensionRegistry::getInstance()->isLoaded( 'CookieWarning' ) ) {
 			$cookieWarningHooks = new CookieWarningHooks();
-			$html .= $cookieWarningHooks->onSkinAfterContent( $html, $skin );
+			$html .= $cookieWarningHooks->onSkinAfterContent( $html, $this->skin );
 		}
 
 		return $html;
